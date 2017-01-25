@@ -37,7 +37,7 @@ public class AppDirs {
 		WIN32, DARWIN, LINUX2
 	}
 
-	public final SystemEnum system;
+	private SystemEnum system;
 	private String appname;
 	private String appauthor;
 	private String version;
@@ -116,11 +116,26 @@ public class AppDirs {
 	}
 
 	/**
+	 * Override the detected filesystem.  Can be used for Unix-style directories on Darwin/Windows.
+	 *
+	 * @param system
+	 * @return
+	 */
+	public AppDirs set_system(final SystemEnum system) {
+		this.system = system;
+		return this;
+	}
+
+	public SystemEnum get_system() {
+		return system;
+	}
+
+	/**
 	 * Return full path to the user-specific data dir for this application.
 	 * <p>
 	 * Typical user data directories are:
 	 * <table>
-	 * <tr><td>Mac OS X</td><td>~/Library/Application Support/{@code appname}</td></tr>
+	 * <tr><td>Mac OS X</td><td>~/Library/Application Support/{@code appauthor}/{@code appname}</td></tr>
 	 * <tr><td>Unix</td><td>~/.local/share/{@code appname}    # or in $XDG_DATA_HOME, if defined</td></tr>
 	 * <tr><td>Win XP (not roaming)</td><td>C:\Documents and Settings\{@code username}\Application Data\{@code appauthor}\{@code appname}</td></tr>
 	 * <tr><td>Win XP (roaming)</td><td>C:\Documents and Settings\{@code username}\Local Settings\Application Data\{@code appauthor}\{@code appname}</td></tr>
@@ -146,9 +161,13 @@ public class AppDirs {
 				}
 			}
 		} else if (system.equals(DARWIN)) {
-			path = filesystem.getPath(java.lang.System.getProperty("user.home"), "Library/Application Support/");
+			path = filesystem.getPath(java.lang.System.getProperty("user.home"), "Library/Application Support");
 			if (appname != null) {
-				path = filesystem.getPath(path.toString(), appname);
+				if (appauthor != null) {
+					path = filesystem.getPath(path.toString(), appauthor, appname);
+				} else {
+					path = filesystem.getPath(path.toString(), appname);
+				}
 			}
 		} else {
 			final String xdgPath = java.lang.System.getenv().get("XDG_DATA_HOME");
@@ -170,7 +189,7 @@ public class AppDirs {
 	 * <p>
 	 * Typical site data directories are:
 	 * <table>
-	 * <tr><td>Mac OS X</td><td>/Library/Application Support/{@code appname}</td></tr>
+	 * <tr><td>Mac OS X</td><td>/Library/Application Support/{@code appauthor}/{@code appname}</td></tr>
 	 * <tr><td>Unix</td><td>/usr/local/share/{@code appname} or /usr/share/<appname></td></tr>
 	 * <tr><td>Win XP</td><td>C:\Documents and Settings\All Users\Application Data\{@code appauthor}\{@code appname}</td></tr>
 	 * <tr><td>Vista</td><td>(Fail! "C:\ProgramData" is a hidden *system* directory on Vista.)</td></tr>
@@ -200,7 +219,11 @@ public class AppDirs {
 		} else if (system.equals(DARWIN)) {
 			path = filesystem.getPath("/Library/Application Support");
 			if (appname != null) {
-				path = filesystem.getPath(path.toString(), appname);
+				if (appauthor != null) {
+					path = filesystem.getPath(path.toString(), appauthor, appname);
+				} else {
+					path = filesystem.getPath(path.toString(), appname);
+				}
 			}
 		} else {
 			// XDG default for $XDG_DATA_DIRS
@@ -237,7 +260,7 @@ public class AppDirs {
 	 * <p>
 	 * Typical user config directories are:
 	 * <table>
-	 * <tr><td>Mac OS X</td><td>same as user_data_dir</td></tr>
+	 * <tr><td>Mac OS X</td><td>~/Library/Preferences/{@code appname}</td></tr>
 	 * <tr><td>Unix</td><td>~/.config/{@code appname}     # or in $XDG_CONFIG_HOME, if defined</td></tr>
 	 * <tr><td>Win *</td><td>same as user_data_dir</td></tr>
 	 * </table>
@@ -249,8 +272,12 @@ public class AppDirs {
 	 */
 	public Path user_config_dir() {
 		Path path;
-		if (system == WIN32 || system == DARWIN) {
+		if (system == WIN32) {
 			path = user_data_dir();
+		} else if (system == DARWIN) {
+			path = filesystem.getPath(System.getProperty("user.home"), "Library/Preferences");
+			if (appname != null)
+				path = filesystem.getPath(path.toString(), appname);
 		} else {
 			final String xdgPath = java.lang.System.getenv().get("XDG_CONFIG_HOME");
 			path = xdgPath == null ?
@@ -271,7 +298,7 @@ public class AppDirs {
 	 * <p>
 	 * Typical site config directories are:
 	 * <table>
-	 * <tr><td>Mac OS X</td><td>same as site_data_dir</td></tr>
+	 * <tr><td>Mac OS X</td><td>/Library/Preferences/{@code appauthor}/{@code appname}</td></tr>
 	 * <tr><td>Unix</td><td>/etc/xdg/{@code appname} or $XDG_CONFIG_DIRS[i]/<appname> for each value in $XDG_CONFIG_DIRS</td></tr>
 	 * <tr><td>Win *</td><td>same as site_data_dir</td></tr>
 	 * <tr><td>Vista</td><td>(Fail! "C:\ProgramData" is a hidden *system* directory on Vista.)</td></tr>
@@ -284,12 +311,18 @@ public class AppDirs {
 	 * @return
 	 */
 	public List<Path> site_config_dir(String appname, final String appauthor, final String version) {
-		if (system == WIN32 || system == DARWIN) {
+		if (system == WIN32) {
 			Path path;
 			path = site_data_dir().get(0);
 			if (appname != null && version != null) {
 				path = filesystem.getPath(path.toString(), version);
 			}
+			return Arrays.asList(path);
+		} else if (system == DARWIN) {
+			Path path;
+			path = filesystem.getPath("/Library/Preferences");
+			if (appname != null)
+				path = filesystem.getPath(path.toString(), appname);
 			return Arrays.asList(path);
 		} else {
 			// XDG default for $XDG_CONFIG_DIRS
@@ -322,7 +355,7 @@ public class AppDirs {
 	 * <p>
 	 * Typical user cache directories are:
 	 * <table>
-	 * <tr><td>Mac OS X</td><td>~/Library/Caches/{@code appname}</td></tr>
+	 * <tr><td>Mac OS X</td><td>~/Library/Caches/{@code appauthor}/{@code appname}</td></tr>
 	 * <tr><td>Unix</td><td>~/.cache/{@code appname} (XDG default)</td></tr>
 	 * <tr><td>Win XP</td><td>C:\Documents and Settings\{@code username}\Local Settings\Application Data\{@code appauthor}\{@code appname}\Cache</td></tr>
 	 * <tr><td>Vista</td><td>C:\Users\{@code username}\AppData\Local\{@code appauthor}\{@code appname}\Cache</td></tr>
@@ -359,7 +392,11 @@ public class AppDirs {
 		} else if (system.equals(DARWIN)) {
 			path = filesystem.getPath(java.lang.System.getProperty("user.home"), "Library/Caches");
 			if (appname != null) {
-				path = filesystem.getPath(path.toString(), appname);
+				if (appauthor != null) {
+					path = filesystem.getPath(path.toString(), appauthor, appname);
+				} else {
+					path = filesystem.getPath(path.toString(), appname);
+				}
 			}
 		} else {
 			final String xdgPath = java.lang.System.getenv().get("XDG_CACHE_HOME");
@@ -417,7 +454,7 @@ public class AppDirs {
 	 * <p>
 	 * Typical user log directories are:
 	 * <table>
-	 * <tr><td>Mac OS X</td><td>~/Library/Logs/{@code appname}</td></tr>
+	 * <tr><td>Mac OS X</td><td>~/Library/Logs/{@code appauthor}/{@code appname}</td></tr>
 	 * <tr><td>Unix</td><td>~/.cache/{@code appname}/log  # or under $XDG_CACHE_HOME if defined</td></tr>
 	 * <tr><td>Win XP</td><td>C:\Documents and Settings\{@code username}\Local Settings\Application Data\{@code appauthor}\{@code appname}\Logs</td></tr>
 	 * <tr><td>Vista</td><td>C:\Users\{@code username}\AppData\Local\{@code appauthor}\{@code appname}\Logs</td></tr>
@@ -437,6 +474,13 @@ public class AppDirs {
 		Path path;
 		if (system.equals(DARWIN)) {
 			path = filesystem.getPath(java.lang.System.getProperty("user.home"), "Library/Logs");
+			if (appname != null) {
+				if (appauthor != null) {
+					path = filesystem.getPath(path.toString(), appauthor, appname);
+				} else {
+					path = filesystem.getPath(path.toString(), appname);
+				}
+			}
 		} else if (system.equals(WIN32)) {
 			path = user_data_dir();
 			version = null;
