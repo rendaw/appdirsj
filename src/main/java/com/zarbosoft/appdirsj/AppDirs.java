@@ -68,7 +68,7 @@ public class AppDirs {
 	}
 
 	/**
-	 * @param appauthor (only used on Windows) is the name of the
+	 * @param appauthor is the name of the
 	 *                  appauthor or distributing body for this application. Typically
 	 *                  it is the owning company name. This falls back to appname. You may
 	 *                  pass False to disable it.
@@ -83,7 +83,7 @@ public class AppDirs {
 	 * @param version is an optional version path element to append to the
 	 *                path. You might want to use this if you want multiple versions
 	 *                of your app to be able to run independently. If used, this
-	 *                would typically be "<major>.<minor>".
+	 *                would typically be "major.minor".
 	 *                Only applied when appname is present.
 	 * @return
 	 */
@@ -134,7 +134,7 @@ public class AppDirs {
 	 * Return full path to the user-specific data dir for this application.
 	 * <p>
 	 * Typical user data directories are:
-	 * <table>
+	 * <table summary="">
 	 * <tr><td>Mac OS X</td><td>~/Library/Application Support/{@code appauthor}/{@code appname}</td></tr>
 	 * <tr><td>Unix</td><td>~/.local/share/{@code appname}    # or in $XDG_DATA_HOME, if defined</td></tr>
 	 * <tr><td>Win XP (not roaming)</td><td>C:\Documents and Settings\{@code username}\Application Data\{@code appauthor}\{@code appname}</td></tr>
@@ -188,9 +188,9 @@ public class AppDirs {
 	 * Return full path to the user-shared data dir for this application.
 	 * <p>
 	 * Typical site data directories are:
-	 * <table>
+	 * <table summary="">
 	 * <tr><td>Mac OS X</td><td>/Library/Application Support/{@code appauthor}/{@code appname}</td></tr>
-	 * <tr><td>Unix</td><td>/usr/local/share/{@code appname} or /usr/share/<appname></td></tr>
+	 * <tr><td>Unix</td><td>/usr/local/share/{@code appname} or /usr/share/{@code appname}</td></tr>
 	 * <tr><td>Win XP</td><td>C:\Documents and Settings\All Users\Application Data\{@code appauthor}\{@code appname}</td></tr>
 	 * <tr><td>Vista</td><td>(Fail! "C:\ProgramData" is a hidden *system* directory on Vista.)</td></tr>
 	 * <tr><td>Win 7</td><td>C:\ProgramData\{@code appauthor}\{@code appname}   # Hidden, but writeable on Win 7.</td></tr>
@@ -259,7 +259,7 @@ public class AppDirs {
 	 * Return full path to the user-specific config dir for this application.
 	 * <p>
 	 * Typical user config directories are:
-	 * <table>
+	 * <table summary="">
 	 * <tr><td>Mac OS X</td><td>~/Library/Preferences/{@code appname}</td></tr>
 	 * <tr><td>Unix</td><td>~/.config/{@code appname}     # or in $XDG_CONFIG_HOME, if defined</td></tr>
 	 * <tr><td>Win *</td><td>same as user_data_dir</td></tr>
@@ -297,9 +297,9 @@ public class AppDirs {
 	 * Return full path to the user-shared data dir for this application.
 	 * <p>
 	 * Typical site config directories are:
-	 * <table>
+	 * <table summary="">
 	 * <tr><td>Mac OS X</td><td>/Library/Preferences/{@code appauthor}/{@code appname}</td></tr>
-	 * <tr><td>Unix</td><td>/etc/xdg/{@code appname} or $XDG_CONFIG_DIRS[i]/<appname> for each value in $XDG_CONFIG_DIRS</td></tr>
+	 * <tr><td>Unix</td><td>/etc/xdg/{@code appname} or $XDG_CONFIG_DIRS[i]/{@code appname} for each value in $XDG_CONFIG_DIRS</td></tr>
 	 * <tr><td>Win *</td><td>same as site_data_dir</td></tr>
 	 * <tr><td>Vista</td><td>(Fail! "C:\ProgramData" is a hidden *system* directory on Vista.)</td></tr>
 	 * </table>
@@ -354,7 +354,7 @@ public class AppDirs {
 	 * Return full path to the user-specific cache dir for this application.
 	 * <p>
 	 * Typical user cache directories are:
-	 * <table>
+	 * <table summary="">
 	 * <tr><td>Mac OS X</td><td>~/Library/Caches/{@code appauthor}/{@code appname}</td></tr>
 	 * <tr><td>Unix</td><td>~/.cache/{@code appname} (XDG default)</td></tr>
 	 * <tr><td>Win XP</td><td>C:\Documents and Settings\{@code username}\Local Settings\Application Data\{@code appauthor}\{@code appname}\Cache</td></tr>
@@ -365,7 +365,7 @@ public class AppDirs {
 	 * the `CSIDL_LOCAL_APPDATA` directory. This is identical to the non-roaming
 	 * app data dir (the default returned by `user_data_dir` above). Apps typically
 	 * put cache data somewhere *under* the given dir here. Some examples:
-	 * ...\Mozilla\Firefox\Profiles\<ProfileName>\Cache
+	 * ...\Mozilla\Firefox\Profiles\*ProfileName*\Cache
 	 * ...\Acme\SuperApp\Cache\1.0
 	 * OPINION: This function appends "Cache" to the `CSIDL_LOCAL_APPDATA` value.
 	 * This can be disabled with the `opinion=False` option.
@@ -417,7 +417,7 @@ public class AppDirs {
 	 * Return full path to the user-specific state dir for this application.
 	 * <p>
 	 * Typical user state directories are:
-	 * <table>
+	 * <table summary="">
 	 * <tr><td>Mac OS X</td><td>same as user_data_dir</td></tr>
 	 * <tr><td>Unix</td><td>~/.local/state/{@code appname}   # or in $XDG_STATE_HOME, if defined</td></tr>
 	 * <tr><td>Win *</td><td>same as user_data_dir</td></tr>
@@ -453,7 +453,7 @@ public class AppDirs {
 	 * Return full path to the user-specific log dir for this application.
 	 * <p>
 	 * Typical user log directories are:
-	 * <table>
+	 * <table summary="">
 	 * <tr><td>Mac OS X</td><td>~/Library/Logs/{@code appauthor}/{@code appname}</td></tr>
 	 * <tr><td>Unix</td><td>~/.cache/{@code appname}/log  # or under $XDG_CACHE_HOME if defined</td></tr>
 	 * <tr><td>Win XP</td><td>C:\Documents and Settings\{@code username}\Local Settings\Application Data\{@code appauthor}\{@code appname}\Logs</td></tr>
